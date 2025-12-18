@@ -11,27 +11,19 @@ from datetime import datetime, timedelta
 import threading
 from time import sleep as wait
 from EasyGiftSend import EasyGiftSend as G
-# Инициализация бота
-bot = telebot.TeleBot("8531119670:AAGQ_wnc61red1l5_j8NciyAtacOsLaB9bA")
-EasyGiftSend = G("8531119670:AAGQ_wnc61red1l5_j8NciyAtacOsLaB9bA")
+token = None
+bot = telebot.TeleBot(token)
+EasyGiftSend = G(token)
 
 def evaluate_donation_bonus(amount, user_id):
-    """
-    Оценка бонусов за пополнение баланса с отправкой подарков
-    """
     results = []
 
     try:
-        # Проверяем баланс бота перед отправкой
         balance = EasyGiftSend.get_balance()
-        print(f"💰 Баланс бота: {balance} звезд")
 
-        if balance < 15:  # Минимальная стоимость подарка
+        if balance < 15:
             return {"ok": False, "description": f"Недостаточно средств на балансе бота. Баланс: {balance}"}
 
-        print(f"🎁 Попытка отправить подарок за пополнение {amount} stars пользователю {user_id}")
-
-        # Система бонусов в зависимости от суммы пополнения
         if amount == 30 or amount == 100:
             if EasyGiftSend.can_afford_gift("🧸"):
                 print("🟡 Отправляем мишку за 30 stars")
@@ -41,18 +33,12 @@ def evaluate_donation_bonus(amount, user_id):
                     message="Спасибо за пополнение 30 Stars! 🎁 В качестве благодарности держите подарок."
                 )
                 results.append(result)
-                print(f"🟢 Результат отправки мишки: {result}")
-            else:
-                print("🔴 Не хватает средств для отправки мишки")
 
 
 
 
         elif amount == 50:
-            print("🟡 Обработка пополнения 50 stars")
-            # Проверяем, можем ли отправить 2 мишки
             if EasyGiftSend.can_afford_gift("🧸") and EasyGiftSend.get_balance() >= 30:
-                print("🟡 Отправляем 2 мишки")
                 for i in range(2):
                     wait(1)
                     result = EasyGiftSend.send_gift(
@@ -61,14 +47,9 @@ def evaluate_donation_bonus(amount, user_id):
                         message=f"Спасибо за пополнение 50 Stars! 🎁 Подарок {i+1}/2"
                     )
                     results.append(result)
-                    print(f"🟢 Результат отправки мишки {i+1}: {result}")
-
         elif amount == 500:
-            print("🟡 Обработка пополнения 500 stars")
             if EasyGiftSend.can_afford_gift("🚀"):
-                # Проверяем баланс для 3 ракет
                 if EasyGiftSend.get_balance() >= 150:
-                    print("🟡 Отправляем 3 ракеты")
                     for i in range(3):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -77,11 +58,8 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за крупное пополнение 500 Stars! 🚀 Подарок {i+1}/3"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки ракеты {i+1}: {result}")
                 else:
-                    # Если не хватает, отправляем сколько можем
                     available_gifts = min(3, EasyGiftSend.get_balance() // 50)
-                    print(f"🟡 Отправляем {available_gifts} ракет(ы) из 3")
                     for i in range(available_gifts):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -90,16 +68,10 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за пополнение 500 Stars! 🚀 Подарок {i+1}/{available_gifts}"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки ракеты {i+1}: {result}")
-            else:
-                print("🔴 Не хватает средств для отправки ракет")
 
         elif amount == 1000:
-            print("🟡 Обработка пополнения 1000 stars")
             if EasyGiftSend.can_afford_gift("🏆"):
-                # Проверяем баланс для 4 кубков
                 if EasyGiftSend.get_balance() >= 400:
-                    print("🟡 Отправляем 4 кубка")
                     for i in range(4):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -108,10 +80,8 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за крупное пополнение 1000 Stars! 🏆 Подарок {i+1}/4"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки кубка {i+1}: {result}")
                 else:
                     available_gifts = min(4, EasyGiftSend.get_balance() // 100)
-                    print(f"🟡 Отправляем {available_gifts} кубка(ов) из 4")
                     for i in range(available_gifts):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -120,16 +90,10 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за пополнение 1000 Stars! 🏆 Подарок {i+1}/{available_gifts}"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки кубка {i+1}: {result}")
-            else:
-                print("🔴 Не хватает средств для отправки кубков")
 
         elif amount > 1000:
-            print(f"🟡 Обработка пополнения {amount} stars (премиум)")
             if EasyGiftSend.can_afford_gift("💎"):
-                # Для сумм больше 1000 - 5 драгоценных камней
                 if EasyGiftSend.get_balance() >= 500:
-                    print("🟡 Отправляем 5 драгоценных камней")
                     for i in range(5):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -138,10 +102,8 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за эксклюзивное пополнение {amount} Stars! 💎 Подарок {i+1}/5"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки камня {i+1}: {result}")
                 else:
                     available_gifts = min(5, EasyGiftSend.get_balance() // 100)
-                    print(f"🟡 Отправляем {available_gifts} камней из 5")
                     for i in range(available_gifts):
                         wait(1)
                         result = EasyGiftSend.send_gift(
@@ -150,11 +112,7 @@ def evaluate_donation_bonus(amount, user_id):
                             message=f"Спасибо за пополнение {amount} Stars! 💎 Подарок {i+1}/{available_gifts}"
                         )
                         results.append(result)
-                        print(f"🟢 Результат отправки камня {i+1}: {result}")
-            else:
-                print("🔴 Не хватает средств для отправки драгоценных камней")
-
-        # Анализируем результаты отправки
+                        
         successful_sends = [r for r in results if r and r.get("ok")]
         failed_sends = [r for r in results if r and not r.get("ok")]
 
@@ -165,37 +123,27 @@ def evaluate_donation_bonus(amount, user_id):
             "total_gifts_sent": len(successful_sends),
             "details": results
         }
-
-        print(f"📊 Итоговый результат отправки подарков: {final_result}")
         return final_result
 
     except Exception as e:
         error_msg = f"System error: {str(e)}"
-        print(f"🔴 Ошибка в evaluate_donation_bonus: {error_msg}")
         return {"ok": False, "description": error_msg}
 
-# Конфигурация ролей
-ADMINS = []  # ID админов
-OWNERS = [7854127029,401692616,8296479969]  # ID владельцев
-
-# Блокировка для управления доступом к базе данных
+ADMINS = []
+OWNERS = []
 db_lock = threading.Lock()
 
-# Улучшенные функции работы с базой данных
 def get_db_connection():
-    """Создает соединение с базой данных с таймаутом"""
+  
     conn = sqlite3.connect('shop.db', timeout=30.0)
-    conn.execute("PRAGMA journal_mode=WAL")  # Включаем WAL режим для лучшей производительности
-    conn.execute("PRAGMA busy_timeout=30000")  # Устанавливаем таймаут 30 секунд
+    conn.execute("PRAGMA journal_mode=WAL") 
+    conn.execute("PRAGMA busy_timeout=30000")
     return conn
 
 def init_db():
-    """Инициализация базы данных с блокировкой"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Таблица пользователей
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
@@ -204,8 +152,6 @@ def init_db():
                 role TEXT DEFAULT 'user'
             )
         ''')
-
-        # Таблица промокодов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS promocodes (
                 code TEXT PRIMARY KEY,
@@ -216,8 +162,6 @@ def init_db():
                 created_date TEXT
             )
         ''')
-
-        # Таблица использованных промокодов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS used_promocodes (
                 user_id INTEGER,
@@ -226,8 +170,6 @@ def init_db():
                 PRIMARY KEY (user_id, code)
             )
         ''')
-
-        # Таблица предложенных аккаунтов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_accounts (
                 account_id TEXT PRIMARY KEY,
@@ -242,7 +184,6 @@ def init_db():
             )
         ''')
 
-        # Таблица купленных аккаунтов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS purchased_accounts (
                 purchase_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -252,8 +193,6 @@ def init_db():
                 price REAL
             )
         ''')
-
-        # Инициализация ролей
         for owner_id in OWNERS:
             cursor.execute('''
                 INSERT OR IGNORE INTO users (user_id, crystals, registration_date, role)
@@ -268,10 +207,7 @@ def init_db():
 
         conn.commit()
         conn.close()
-
-# Получение баланса пользователя
 def get_user_balance(user_id):
-    """Получение баланса пользователя с блокировкой"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -281,7 +217,6 @@ def get_user_balance(user_id):
         if result:
             balance = result[0]
         else:
-            # Регистрируем нового пользователя
             cursor.execute('''
                 INSERT INTO users (user_id, crystals, registration_date, role)
                 VALUES (?, ?, ?, ?)
@@ -292,14 +227,10 @@ def get_user_balance(user_id):
         conn.close()
         return balance
 
-# Обновление баланса пользователя
 def update_balance(user_id, amount):
-    """Обновление баланса пользователя с блокировкой"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Получаем текущий баланс
         cursor.execute('SELECT crystals FROM users WHERE user_id = ?', (user_id,))
         result = cursor.fetchone()
 
@@ -307,7 +238,6 @@ def update_balance(user_id, amount):
             new_balance = result[0] + amount
             cursor.execute('UPDATE users SET crystals = ? WHERE user_id = ?', (new_balance, user_id))
         else:
-            # Создаем нового пользователя
             cursor.execute('''
                 INSERT INTO users (user_id, crystals, registration_date, role)
                 VALUES (?, ?, ?, ?)
@@ -316,10 +246,7 @@ def update_balance(user_id, amount):
         conn.commit()
         conn.close()
         return True
-
-# Получение роли пользователя
 def get_user_role(user_id):
-    """Получение роли пользователя с блокировкой"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -331,8 +258,6 @@ def get_user_role(user_id):
             return result[0]
         else:
             return 'user'
-
-# Проверка прав
 def is_owner(user_id):
     return user_id in OWNERS
 
@@ -341,8 +266,6 @@ def is_admin(user_id):
 
 def is_user(user_id):
     return get_user_role(user_id) == 'user'
-
-# Главное меню с учетом ролей
 def main_menu(user_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🛒 Магазин")
@@ -359,8 +282,6 @@ def main_menu(user_id):
         markup.add(btn1, btn2, btn3, btn4)
 
     return markup
-
-# Функция для получения аккаунтов с пагинацией
 def get_accounts_page(page=1, per_page=4):
     accounts = scan_all_accounts()
     total_accounts = len(accounts)
@@ -370,8 +291,6 @@ def get_accounts_page(page=1, per_page=4):
     end_idx = start_idx + per_page
 
     return accounts[start_idx:end_idx], page, total_pages
-
-# Обработчик кнопки "🛒 Магазин"
 @bot.message_handler(func=lambda message: message.text == "🛒 Магазин")
 def show_shop(message):
     accounts, current_page, total_pages = get_accounts_page()
@@ -389,8 +308,6 @@ def show_shop(message):
         shop_text += f"   └ ID: `{account['name']}`\n\n"
 
     markup = types.InlineKeyboardMarkup()
-
-    # Добавляем кнопки для покупки каждого аккаунта
     for account in accounts:
         if account.get('status') == 'active':
             btn = types.InlineKeyboardButton(
@@ -398,8 +315,6 @@ def show_shop(message):
                 callback_data=f"buy_{account['name']}"
             )
             markup.add(btn)
-
-    # Добавляем кнопки пагинации
     pagination_buttons = []
     if current_page > 1:
         pagination_buttons.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"page_{current_page-1}"))
@@ -411,7 +326,6 @@ def show_shop(message):
 
     bot.send_message(message.chat.id, shop_text, reply_markup=markup)
 
-# Обработчик пагинации магазина
 @bot.callback_query_handler(func=lambda call: call.data.startswith('page_'))
 def handle_pagination(call):
     try:
@@ -431,8 +345,6 @@ def handle_pagination(call):
             shop_text += f"   └ ID: `{account['name']}`\n\n"
 
         markup = types.InlineKeyboardMarkup()
-
-        # Добавляем кнопки для покупки каждого аккаунта
         for account in accounts:
             if account.get('status') == 'active':
                 btn = types.InlineKeyboardButton(
@@ -440,8 +352,6 @@ def handle_pagination(call):
                     callback_data=f"buy_{account['name']}"
                 )
                 markup.add(btn)
-
-        # Добавляем кнопки пагинации
         pagination_buttons = []
         if current_page > 1:
             pagination_buttons.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"page_{current_page-1}"))
@@ -461,7 +371,6 @@ def handle_pagination(call):
     except Exception as e:
         bot.answer_callback_query(call.id, "❌ Ошибка при загрузке страницы")
         print(str(e))
-# Обработчик покупки аккаунта
 @bot.callback_query_handler(func=lambda call: call.data.startswith('buy_'))
 def handle_buy_account(call):
     try:
@@ -482,20 +391,15 @@ def handle_buy_account(call):
             bot.answer_callback_query(call.id, f"❌ Недостаточно средств. Нужно: {account_price} 💎")
             return
 
-        # Проверяем статус аккаунта
         if account.get('status') != 'active':
             bot.answer_callback_query(call.id, "❌ Аккаунт недоступен для покупки")
             return
-
-        # Списываем средства и записываем покупку в транзакции
         with db_lock:
             conn = get_db_connection()
             cursor = conn.cursor()
 
             try:
                 cursor.execute("BEGIN TRANSACTION")
-
-                # Списываем средства
                 cursor.execute('SELECT crystals FROM users WHERE user_id = ?', (user_id,))
                 current_balance = cursor.fetchone()[0]
                 new_balance = current_balance - account_price
@@ -507,14 +411,10 @@ def handle_buy_account(call):
                     return
 
                 cursor.execute('UPDATE users SET crystals = ? WHERE user_id = ?', (new_balance, user_id))
-
-                # Записываем покупку
                 cursor.execute('''
                     INSERT INTO purchased_accounts (user_id, account_id, purchase_date, price)
                     VALUES (?, ?, ?, ?)
                 ''', (user_id, account_id, datetime.now().isoformat(), account_price))
-
-                # Начисляем средства продавцу (75% от цены)
                 seller_id = account.get('seller_id')
                 is_admin_account = account.get('is_admin_account', False)
 
@@ -527,25 +427,19 @@ def handle_buy_account(call):
                         new_seller_balance = seller_balance_result[0] + seller_income
                         cursor.execute('UPDATE users SET crystals = ? WHERE user_id = ?', (new_seller_balance, seller_id))
                     else:
-                        # Создаем запись для продавца если её нет
                         cursor.execute('''
                             INSERT INTO users (user_id, crystals, registration_date, role)
                             VALUES (?, ?, ?, ?)
                         ''', (seller_id, seller_income, datetime.now().isoformat(), 'user'))
 
                 conn.commit()
-
-                # Создаем архив с аккаунтом
                 zip_filename = f"account_{account_id}_{user_id}.zip"
                 zip_path = os.path.join("downloads", zip_filename)
                 os.makedirs("downloads", exist_ok=True)
-
-                # Получаем правильный путь к tdata
                 account_path = account['path']
                 tdata_path = os.path.join(account_path, "tdata")
 
                 if create_tdata_zip(tdata_path, zip_path):
-                    # Отправляем файл пользователю
                     with open(zip_path, 'rb') as file:
                         bot.send_document(
                             call.message.chat.id,
@@ -559,17 +453,10 @@ def handle_buy_account(call):
 └ Остаток на балансе: {new_balance:.2f} 💎
 """
                         )
-
-                    # Удаляем временный файл архива
                     os.remove(zip_path)
-
-                    # УДАЛЯЕМ АККАУНТ ИЗ МАГАЗИНА - ИСПРАВЛЕННАЯ ЧАСТЬ
                     try:
-                        # Удаляем папку с аккаунтом
                         if os.path.exists(account_path):
                             shutil.rmtree(account_path)
-
-                        # Удаляем запись из user_accounts если это пользовательский аккаунт
                         if not is_admin_account:
                             cursor.execute('DELETE FROM user_accounts WHERE account_id = ?', (account_id,))
                             conn.commit()
@@ -579,7 +466,6 @@ def handle_buy_account(call):
 
                 else:
                     bot.send_message(call.message.chat.id, "❌ Ошибка при создании архива. Обратитесь к администратору.")
-                    # Возвращаем средства при ошибке
                     cursor.execute('UPDATE users SET crystals = ? WHERE user_id = ?', (current_balance, user_id))
                     conn.commit()
 
@@ -588,15 +474,12 @@ def handle_buy_account(call):
             except Exception as e:
                 conn.rollback()
                 bot.answer_callback_query(call.id, f"❌ Ошибка при покупке: {str(e)}")
-                print(f"Ошибка покупки: {str(e)}")
             finally:
                 conn.close()
 
     except Exception as e:
         bot.answer_callback_query(call.id, f"❌ Ошибка: {str(e)}")
-        print(f"Общая ошибка покупки: {str(e)}")
 
-# Обработчик кнопки "📤 Выставить аккаунт" для админов
 @bot.message_handler(func=lambda message: message.text == "📤 Выставить аккаунт" and is_admin(message.from_user.id))
 def admin_upload_account(message):
     msg = bot.send_message(message.chat.id, """
@@ -615,31 +498,30 @@ def process_admin_upload(message):
             file_info = bot.get_file(message.document.file_id)
             downloaded_file = bot.download_file(file_info.file_path)
 
-            # Создаем временную папку
+          
             temp_dir = f"temp_admin_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             os.makedirs(temp_dir, exist_ok=True)
 
             zip_path = os.path.join(temp_dir, "uploaded.zip")
             extract_path = os.path.join(temp_dir, "extracted")
 
-            # Сохраняем архив
+
             with open(zip_path, 'wb') as f:
                 f.write(downloaded_file)
 
-            # Распаковываем
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_path)
 
-            # Ищем папку tdata
+
             tdata_path = find_tdata_folder(extract_path)
 
             if tdata_path:
-                # Проверяем валидность аккаунта
+              
                 bot.send_message(message.chat.id, "🔍 Проверяю валидность аккаунта...")
                 validity_result = check_account_status(tdata_path)
 
                 if validity_result['status'] == 'active':
-                    # Запрашиваем данные для выставления
+
                     msg = bot.send_message(message.chat.id, f"""
 ✅ **Аккаунт прошел проверку!**
 
@@ -685,15 +567,15 @@ def process_admin_account_data(message, tdata_path, temp_dir):
             shutil.rmtree(temp_dir, ignore_errors=True)
             return
 
-        # Создаем уникальный ID для аккаунта
+    
         account_id = f"admin_{message.from_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         account_path = os.path.join("tdatas", account_id)
         os.makedirs(account_path, exist_ok=True)
 
-        # Копируем tdata
+
         shutil.copytree(tdata_path, os.path.join(account_path, "tdata"))
 
-        # Создаем market.json
+
         market_data = {
             'price': price,
             'country': country,
@@ -705,7 +587,6 @@ def process_admin_account_data(message, tdata_path, temp_dir):
         with open(os.path.join(account_path, "market.json"), 'w', encoding='utf-8') as f:
             json.dump(market_data, f, ensure_ascii=False, indent=2)
 
-        # Очищаем временные файлы
         shutil.rmtree(temp_dir, ignore_errors=True)
 
         bot.send_message(message.chat.id, f"""
@@ -725,13 +606,11 @@ def process_admin_account_data(message, tdata_path, temp_dir):
         bot.send_message(message.chat.id, f"❌ Ошибка: {str(e)}")
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-# Функции для работы с промокодами
+
 def generate_promo_code(length=8):
-    """Генерация промокода"""
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
-# Обработчик создания промокода в админ панели
 @bot.callback_query_handler(func=lambda call: call.data == "admin_create_promo")
 def admin_create_promo(call):
     msg = bot.send_message(call.message.chat.id, """
@@ -757,11 +636,11 @@ def process_promo_creation(message):
         if crystals_amount <= 0 or uses_left <= 0 or days_valid <= 0:
             raise ValueError
 
-        # Генерируем промокод
+      
         promo_code = generate_promo_code()
         expiration_date = (datetime.now() + timedelta(days=days_valid)).isoformat()
 
-        # Сохраняем в базу с блокировкой
+ 
         with db_lock:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -787,9 +666,8 @@ def process_promo_creation(message):
     except ValueError:
         bot.send_message(message.chat.id, "❌ Неверный формат данных. Используйте: `кристаллы использования дни`")
 
-# Улучшенные функции для работы с промокодами
+
 def validate_promo_code(code):
-    """Проверяет валидность промокода с блокировкой"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -814,23 +692,21 @@ def validate_promo_code(code):
             return {'valid': False}
 
 def use_promo_code(user_id, code):
-    """Использует промокод для пользователя с транзакцией"""
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
 
         try:
-            # Начинаем транзакцию
+          
             cursor.execute("BEGIN TRANSACTION")
 
-            # Проверяем, не использовал ли уже пользователь этот промокод
+         
             cursor.execute('SELECT * FROM used_promocodes WHERE user_id = ? AND code = ?', (user_id, code))
             if cursor.fetchone():
                 conn.rollback()
                 conn.close()
                 return {'success': False, 'message': 'Вы уже использовали этот промокод'}
 
-            # Получаем текущее количество использований
             cursor.execute('SELECT uses_left, crystals_amount FROM promocodes WHERE code = ?', (code,))
             promo_result = cursor.fetchone()
 
@@ -846,10 +722,8 @@ def use_promo_code(user_id, code):
                 conn.close()
                 return {'success': False, 'message': 'Промокод закончился'}
 
-            # Обновляем количество использований
             cursor.execute('UPDATE promocodes SET uses_left = uses_left - 1 WHERE code = ?', (code,))
 
-            # Начисляем кристаллы
             cursor.execute('SELECT crystals FROM users WHERE user_id = ?', (user_id,))
             user_result = cursor.fetchone()
 
@@ -857,19 +731,17 @@ def use_promo_code(user_id, code):
                 new_balance = user_result[0] + crystals_amount
                 cursor.execute('UPDATE users SET crystals = ? WHERE user_id = ?', (new_balance, user_id))
             else:
-                # Создаем нового пользователя
                 cursor.execute('''
                     INSERT INTO users (user_id, crystals, registration_date, role)
                     VALUES (?, ?, ?, ?)
                 ''', (user_id, crystals_amount, datetime.now().isoformat(), 'user'))
 
-            # Записываем использование
+
             cursor.execute('''
                 INSERT INTO used_promocodes (user_id, code, used_date)
                 VALUES (?, ?, ?)
             ''', (user_id, code, datetime.now().isoformat()))
 
-            # Коммитим транзакцию
             conn.commit()
             return {'success': True, 'crystals_amount': crystals_amount}
 
@@ -882,7 +754,6 @@ def use_promo_code(user_id, code):
         finally:
             conn.close()
 
-# Обработчик активации промокода
 @bot.callback_query_handler(func=lambda call: call.data == "activate_promo")
 def activate_promo(call):
     msg = bot.send_message(call.message.chat.id, "Введите промокод:")
@@ -896,14 +767,12 @@ def process_promo_activation(message):
         bot.send_message(message.chat.id, "❌ Пожалуйста, введите промокод")
         return
 
-    # Проверяем валидность промокода
     validation = validate_promo_code(promo_code)
 
     if not validation['valid']:
         bot.send_message(message.chat.id, "❌ Промокод недействителен, закончился срок действия или использования")
         return
 
-    # Используем промокод
     result = use_promo_code(user_id, promo_code)
 
     if result['success']:
@@ -916,7 +785,6 @@ def process_promo_activation(message):
     else:
         bot.send_message(message.chat.id, f"❌ {result['message']}")
 
-# Обработчик управления ролями
 @bot.callback_query_handler(func=lambda call: call.data == "admin_roles" and is_owner(call.from_user.id))
 def admin_roles(call):
     markup = types.InlineKeyboardMarkup()
@@ -950,13 +818,11 @@ def process_give_admin(message):
 
             if cursor.rowcount > 0:
                 bot.send_message(message.chat.id, f"✅ Пользователь {user_id} назначен админом")
-                # Уведомляем пользователя
                 try:
                     bot.send_message(user_id, "🎉 Вам выданы права администратора!")
                 except:
                     pass
             else:
-                # Создаем нового пользователя с ролью админа
                 cursor.execute('''
                     INSERT INTO users (user_id, crystals, registration_date, role)
                     VALUES (?, ?, ?, ?)
@@ -964,7 +830,6 @@ def process_give_admin(message):
                 conn.commit()
                 bot.send_message(message.chat.id, f"✅ Пользователь {user_id} создан и назначен админом")
 
-                # Уведомляем пользователя
                 try:
                     bot.send_message(user_id, "🎉 Вам выданы права администратора!")
                 except:
@@ -985,7 +850,6 @@ def process_remove_admin(message):
     try:
         user_id = int(message.text)
 
-        # Не позволяем снимать права у владельцев
         if user_id in OWNERS:
             bot.send_message(message.chat.id, "❌ Нельзя снять права у владельца")
             return
@@ -997,7 +861,6 @@ def process_remove_admin(message):
 
             if cursor.rowcount > 0:
                 bot.send_message(message.chat.id, f"✅ Права админа сняты у пользователя {user_id}")
-                # Уведомляем пользователя
                 try:
                     bot.send_message(user_id, "ℹ️ Ваши права администратора были сняты")
                 except:
@@ -1011,14 +874,12 @@ def process_remove_admin(message):
     except ValueError:
         bot.send_message(message.chat.id, "❌ Неверный ID пользователя")
 
-# Обработчик статистики
 @bot.callback_query_handler(func=lambda call: call.data == "admin_stats")
 def admin_stats(call):
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Общая статистика
         cursor.execute('SELECT COUNT(*) FROM users')
         total_users = cursor.fetchone()[0]
 
@@ -1067,7 +928,6 @@ def admin_stats(call):
         reply_markup=markup
     )
 
-# Обработчик модерации аккаунтов
 @bot.callback_query_handler(func=lambda call: call.data == "admin_moderation")
 def admin_moderation(call):
     with db_lock:
@@ -1110,7 +970,6 @@ def admin_moderation(call):
         reply_markup=markup
     )
 
-# Обработчик одобрения/отклонения аккаунтов
 @bot.callback_query_handler(func=lambda call: call.data.startswith(('approve_', 'reject_')))
 def handle_moderation_decision(call):
     action, account_id = call.data.split('_', 1)
@@ -1129,10 +988,7 @@ def handle_moderation_decision(call):
         account_id, user_id, account_name, price, status, upload_date, file_path, country, is_admin_account = account
 
         if action == 'approve':
-            # Одобряем аккаунт
             cursor.execute('UPDATE user_accounts SET status = "approved" WHERE account_id = ?', (account_id,))
-
-            # Перемещаем аккаунт в основную папку
             old_path = file_path
             new_path = os.path.join("tdatas", account_id)
 
@@ -1140,10 +996,7 @@ def handle_moderation_decision(call):
             if os.path.exists(old_path):
                 shutil.move(old_path, new_path)
 
-                # Обновляем путь в базе
                 cursor.execute('UPDATE user_accounts SET file_path = ? WHERE account_id = ?', (new_path, account_id))
-
-                # Создаем market.json
                 market_data = {
                     'price': price,
                     'country': country,
@@ -1155,7 +1008,7 @@ def handle_moderation_decision(call):
                 with open(os.path.join(new_path, "market.json"), 'w', encoding='utf-8') as f:
                     json.dump(market_data, f, ensure_ascii=False, indent=2)
 
-            # Уведомляем пользователя
+
             try:
                 bot.send_message(user_id, f"""
 ✅ **Ваш аккаунт одобрен!**
@@ -1169,14 +1022,12 @@ def handle_moderation_decision(call):
             bot.answer_callback_query(call.id, "✅ Аккаунт одобрен")
 
         else:  # reject
-            # Отклоняем аккаунт
+            
             cursor.execute('DELETE FROM user_accounts WHERE account_id = ?', (account_id,))
-
-            # Удаляем файлы
             if os.path.exists(file_path):
                 shutil.rmtree(file_path, ignore_errors=True)
 
-            # Уведомляем пользователя
+
             try:
                 bot.send_message(user_id, f"""
 ❌ **Ваш аккаунт отклонен**
@@ -1192,24 +1043,24 @@ def handle_moderation_decision(call):
         conn.commit()
         conn.close()
 
-    # Обновляем сообщение модерации
+   
     admin_moderation(call)
 
-# УЛУЧШЕННЫЕ ФУНКЦИИ ПРОВЕРКИ ВАЛИДНОСТИ
+
 
 def find_tdata_folder(path):
-    """Находит папку tdata в указанном пути с полной проверкой"""
+   
     if not os.path.exists(path):
         return None
 
     try:
-        # Сначала проверяем корневую папку
+     
         if 'tdata' in os.listdir(path):
             tdata_path = os.path.join(path, 'tdata')
             if os.path.isdir(tdata_path) and is_valid_tdata(tdata_path):
                 return tdata_path
 
-        # Затем рекурсивно ищем во всех подпапках
+       
         for root, dirs, files in os.walk(path):
             if 'tdata' in dirs:
                 tdata_path = os.path.join(root, 'tdata')
@@ -1222,27 +1073,25 @@ def find_tdata_folder(path):
         return None
 
 def is_valid_tdata(tdata_path):
-    """Проверяет, является ли папка валидной tdata"""
+    
     try:
         if not os.path.exists(tdata_path) or not os.path.isdir(tdata_path):
             return False
 
         contents = os.listdir(tdata_path)
 
-        # Проверяем наличие ключевых файлов/папок tdata
+
         required_items = [
-            'key_datas',  # Папка с ключами
-            'dbs',        # Папка с базами данных
-            'maps',       # Папка с картами
+            'key_datas',  
+            'dbs',        
+            'maps',       
         ]
 
-        # Проверяем наличие хотя бы одного ключевого элемента
+     
         has_required = any(item in contents for item in required_items)
 
-        # Или проверяем наличие session файлов
         has_sessions = any(f.endswith('.s') for f in contents)
 
-        # Или проверяем наличие файлов tdata
         has_tdata_files = any(f.startswith('tdata') for f in contents)
 
         return has_required or has_sessions or has_tdata_files
@@ -1252,45 +1101,41 @@ def is_valid_tdata(tdata_path):
         return False
 
 def check_account_status(tdata_path):
-    """Проверяет статус аккаунта с улучшенной обработкой ошибок"""
+  
     if not tdata_path or not os.path.exists(tdata_path):
         return {'status': 'invalid', 'details': 'Папка tdata не найдена'}
 
-    # Сначала проверяем базовую структуру
     if not is_valid_tdata(tdata_path):
         return {'status': 'invalid', 'details': 'Невалидная структура tdata папки'}
 
     try:
-        # Используем базовую проверку вместо OpenTele
         return basic_tdata_check(tdata_path)
     except Exception as e:
         print(f"Проверка не удалась: {e}")
         return {'status': 'error', 'details': f'Ошибка проверки: {str(e)}'}
 
 def basic_tdata_check(tdata_path):
-    """Базовая проверка tdata без использования OpenTele"""
     try:
         contents = os.listdir(tdata_path)
 
-        # Проверяем ключевые элементы
         key_elements = [
-            'key_datas',  # Ключи авторизации
-            'dbs',        # Базы данных
-            'maps',       # Карты
-            'user_data',  # Данные пользователя
+            'key_datas',  
+            'dbs',        
+            'maps',       
+            'user_data',  
         ]
 
         found_elements = [elem for elem in key_elements if elem in contents]
 
         if not found_elements:
-            # Проверяем наличие session файлов
+          
             session_files = [f for f in contents if f.endswith('.s')]
             if session_files:
                 return {'status': 'active', 'details': f'Найдены session файлы: {len(session_files)} шт.'}
             else:
                 return {'status': 'invalid', 'details': 'Не найдены ключевые элементы tdata'}
 
-        # Проверяем размер ключевых файлов
+        
         total_size = 0
         for item in found_elements:
             item_path = os.path.join(tdata_path, item)
@@ -1303,7 +1148,7 @@ def basic_tdata_check(tdata_path):
                             file_path = os.path.join(root, file)
                             total_size += os.path.getsize(file_path)
 
-        if total_size < 100:  # Слишком маленький размер - вероятно, невалидный
+        if total_size < 100:  
             return {'status': 'invalid', 'details': 'Недостаточно данных в tdata'}
 
         return {
@@ -1315,7 +1160,7 @@ def basic_tdata_check(tdata_path):
         return {'status': 'error', 'details': f'Ошибка базовой проверки: {str(e)}'}
 
 def create_tdata_zip(tdata_path, zip_path):
-    """Создает zip архив с tdata с проверкой целостности"""
+   
     if not tdata_path or not os.path.exists(tdata_path):
         return False
 
@@ -1325,18 +1170,18 @@ def create_tdata_zip(tdata_path, zip_path):
                 for file in files:
                     file_path = os.path.join(root, file)
 
-                    # Проверяем размер файла
+                   
                     if os.path.getsize(file_path) > 100 * 1024 * 1024:  # 100MB limit
                         continue
 
-                    # Проверяем расширение файла
+           
                     if file.endswith(('.exe', '.dll', '.bat', '.cmd')):
                         continue
 
                     arcname = os.path.relpath(file_path, os.path.dirname(tdata_path))
                     zipf.write(file_path, arcname)
 
-        # Проверяем, что архив создан и не пустой
+       
         if os.path.exists(zip_path) and os.path.getsize(zip_path) > 0:
             return True
         else:
@@ -1347,7 +1192,7 @@ def create_tdata_zip(tdata_path, zip_path):
         return False
 
 def scan_all_accounts():
-    """Сканирует все доступные аккаунты с проверкой валидности"""
+
     accounts = []
     tdatas_dir = "tdatas"
 
@@ -1361,15 +1206,15 @@ def scan_all_accounts():
                 market_file = os.path.join(account_path, "market.json")
                 tdata_folder = os.path.join(account_path, "tdata")
 
-                # Проверяем наличие необходимых файлов
+             
                 if os.path.exists(market_file) and os.path.exists(tdata_folder):
                     try:
                         with open(market_file, 'r', encoding='utf-8') as f:
                             market_data = json.load(f)
 
-                        # Проверяем обязательные поля
+                 
                         if 'price' in market_data and 'country' in market_data:
-                            # Проверяем валидность аккаунта
+                           
                             status = check_account_status(tdata_folder)
 
                             account_info = {
@@ -1380,7 +1225,7 @@ def scan_all_accounts():
                                 'status': status['status']
                             }
 
-                            # Добавляем информацию о продавце
+                            
                             if 'seller_id' in market_data:
                                 account_info['seller_id'] = market_data['seller_id']
                             if 'is_admin_account' in market_data:
@@ -1393,30 +1238,28 @@ def scan_all_accounts():
     except Exception as e:
         print(f"Ошибка сканирования аккаунтов: {e}")
 
-    # Фильтруем только активные аккаунты
+
     return [acc for acc in accounts if acc.get('status') == 'active']
 
 def validate_user_upload(file_path, user_id):
-    """Проверяет загруженный пользователем файл"""
     try:
-        # Проверяем размер файла (максимум 50MB)
+       
         if os.path.getsize(file_path) > 10 * 1024 * 1024:
             return {'valid': False, 'message': 'Файл слишком большой (максимум 10MB)'}
 
-        # Проверяем расширение
+
         if not file_path.lower().endswith('.zip'):
             return {'valid': False, 'message': 'Файл должен быть в формате ZIP'}
 
-        # Проверяем содержимое архива
+        
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             file_list = zip_ref.namelist()
 
-            # Ищем папку tdata в архиве
             has_tdata = any('tdata/' in f for f in file_list)
             if not has_tdata:
                 return {'valid': False, 'message': 'В архиве не найдена папка tdata'}
 
-            # Проверяем на вредоносные файлы
+
             for file in file_list:
                 if file.endswith(('.exe', '.py', '.dll', '.bat', '.cmd', '.vbs', '.js')):
                     return {'valid': False, 'message': 'Архив содержит запрещенные файлы'}
@@ -1426,7 +1269,6 @@ def validate_user_upload(file_path, user_id):
     except Exception as e:
         return {'valid': False, 'message': f'Ошибка проверки файла: {str(e)}'}
 
-# ОБРАБОТЧИКИ ДЛЯ НОВЫХ ФУНКЦИЙ
 
 @bot.message_handler(func=lambda message: message.text == "💰 Баланс")
 def show_balance(message):
@@ -1445,23 +1287,21 @@ def show_balance(message):
         parse_mode="Markdown"
     )
 
-# Обработчик пополнения через звёзды
 @bot.callback_query_handler(func=lambda call: call.data == "topup_stars")
 def topup_stars(call):
     user_id = call.from_user.id
-    balance = get_user_balance(user_id)  # Ваша функция для получения баланса
-
+    balance = get_user_balance(user_id) 
     markup = types.InlineKeyboardMarkup()
-    # Доступные суммы для пополнения
+ 
     amounts = [1, 5, 10, 30, 100, 500, 1000, 1500, 10000]
     buttons = []
     for amount in amounts:
         buttons.append(types.InlineKeyboardButton(f"{amount} ⭐", callback_data=f"stars_{amount}"))
-        # Создаем ряды по 2 кнопки
+        
         if len(buttons) == 2:
             markup.add(*buttons)
             buttons = []
-    if buttons:  # Добавляем оставшиеся кнопки
+    if buttons:
         markup.add(*buttons)
     btn_back = types.InlineKeyboardButton("⬅️ Назад", callback_data="back_to_balance")
     markup.add(btn_back)
@@ -1473,16 +1313,14 @@ def topup_stars(call):
         reply_markup=markup
     )
 
-# Обработчик выбора суммы
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('stars_'))
 def handle_stars_amount(call):
     amount = int(call.data.split('_')[1])
     user_id = call.from_user.id
 
-    # Создаем инвойс (счет на оплату)
-    prices = [types.LabeledPrice(label=f"Пополнение на {amount} кристаллов", amount=amount)] # amount в звездах
 
-    # Создаем клавиатуру с кнопкой "Оплатить"
+    prices = [types.LabeledPrice(label=f"Пополнение на {amount} кристаллов", amount=amount)]
     markup = types.InlineKeyboardMarkup()
     pay_button = types.InlineKeyboardButton("Пополнить ⭐", pay=True)
     markup.add(pay_button)
@@ -1492,42 +1330,37 @@ def handle_stars_amount(call):
             chat_id=call.message.chat.id,
             title=f"Пополнение баланса",
             description=f"На ваш баланс будет зачислено {amount} кристаллов.",
-            invoice_payload=f"topup_{user_id}_{amount}", # Уникальный идентификатор платежа
+            invoice_payload=f"topup_{user_id}_{amount}", 
             provider_token="",
-            currency="XTR",  # Валюта Telegram Stars [citation:3]
+            currency="XTR",  
             prices=prices,
             reply_markup=markup
         )
     except Exception as e:
         bot.send_message(call.message.chat.id, f"❌ Произошла ошибка при создании счета: {e}")
 
-# Обработчик предварительного запроса на оплату
+
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def process_pre_checkout(pre_checkout_query):
-    # Здесь можно проверить наличие товара или валидность заказа
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
-# Обработчик успешного платежа
 @bot.message_handler(content_types=['successful_payment'])
 def process_successful_payment(message):
     payment_info = message.successful_payment
     user_id = message.from_user.id
     payload_parts = payment_info.invoice_payload.split('_')
-    amount = int(payload_parts[2])  # Получаем amount (100)
+    amount = int(payload_parts[2])
     evaluate_donation_bonus(amount, user_id)
     bot.send_message(message.chat.id,f"Спасибо за пополнение {amount} звёзд, держите ваш обещанный подарок!")
-    # Начисляем кристаллы на баланс пользователя
-    update_balance(user_id, amount)  # Ваша функция для обновления баланса
+    update_balance(user_id, amount) 
     new_balance = get_user_balance(user_id)
 
-    # Подтверждаем пользователю
     bot.send_message(
         message.chat.id,
         f"✅ Оплата прошла успешно! Ваш баланс пополнен на {amount} кристаллов.\n"
         f"💰 Текущий баланс: {new_balance} 💎"
     )
 
-# Обработчик возврата к балансу
 @bot.callback_query_handler(func=lambda call: call.data == "back_to_balance")
 def back_to_balance(call):
     user_id = call.from_user.id
@@ -1546,7 +1379,6 @@ def back_to_balance(call):
         parse_mode="Markdown"
     )
 
-# Временное хранилище для данных пользователей
 user_data = {}
 
 @bot.message_handler(func=lambda message: message.text == "📤 Предложить аккаунт" and not is_admin(message.from_user.id))
@@ -1574,24 +1406,23 @@ def process_user_upload(message):
             file_info = bot.get_file(message.document.file_id)
             downloaded_file = bot.download_file(file_info.file_path)
 
-            # Создаем временную папку
+           
             temp_dir = f"temp_user_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             os.makedirs(temp_dir, exist_ok=True)
 
             zip_path = os.path.join(temp_dir, "uploaded.zip")
 
-            # Сохраняем архив
+            
             with open(zip_path, 'wb') as f:
                 f.write(downloaded_file)
 
-            # Проверяем валидность загрузки
+          
             validation = validate_user_upload(zip_path, user_id)
             if not validation['valid']:
                 bot.send_message(message.chat.id, f"❌ {validation['message']}")
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 return
 
-            # Запрашиваем данные аккаунта
             msg = bot.send_message(message.chat.id, """
 ✅ **Архив прошел проверку!**
 
@@ -1623,21 +1454,20 @@ def process_user_account_data(message, temp_dir, zip_path):
             shutil.rmtree(temp_dir, ignore_errors=True)
             return
 
-        if price > 10000:  # Максимальная цена
+        if price > 10000:
             bot.send_message(message.chat.id, "❌ Слишком высокая цена (максимум 10000 💎)")
             shutil.rmtree(temp_dir, ignore_errors=True)
             return
 
-        # Создаем уникальный ID для аккаунта
+      
         account_id = f"user_{message.from_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         account_path = os.path.join("moderation", account_id)
         os.makedirs(account_path, exist_ok=True)
 
-        # Распаковываем архив
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(account_path)
 
-        # Сохраняем в базу данных на модерацию
+
         with db_lock:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -1649,7 +1479,7 @@ def process_user_account_data(message, temp_dir, zip_path):
             conn.commit()
             conn.close()
 
-        # Очищаем временные файлы
+
         shutil.rmtree(temp_dir, ignore_errors=True)
 
         bot.send_message(message.chat.id, f"""
@@ -1662,7 +1492,7 @@ def process_user_account_data(message, temp_dir, zip_path):
 Аккаунт будет проверен администратором и добавлен в магазине.
         """)
 
-        # Уведомляем админов
+
         for admin_id in ADMINS:
             try:
                 bot.send_message(admin_id, f"""
@@ -1750,38 +1580,37 @@ def start(message):
     user_id = message.from_user.id
     welcome_text = "Добро пожаловать в магазин Telegram аккаунтов! Выберите раздел:"
 
-    # Регистрируем пользователя если его нет и проверяем, новый ли он
     is_new_user = check_and_register_user(user_id)
 
-    # Если пользователь новый - генерируем и выдаем промокод
+    
     if is_new_user:
         promo_code = generate_promo_code()
-        crystals_amount = random.randint(5, 10)  # Случайное количество от 5 до 10 кристаллов
+        crystals_amount = random.randint(5, 10) 
 
-        # Сохраняем промокод в базу
+
         save_welcome_promo(promo_code, crystals_amount, user_id)
 
-        # Добавляем информацию о промокоде в приветствие
+       
         welcome_text += f"\n\n🎁 **Вам выдан приветственный промокод на {crystals_amount} кристаллов:**\n`{promo_code}`\n\nИспользуйте его в разделе '💰 Баланс' -> '🎁 Активировать промокод'"
 
     bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu(user_id))
 
 def check_and_register_user(user_id):
-    """Проверяет, новый ли пользователь, и регистрирует если нужно"""
+
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Проверяем, есть ли пользователь в базе
+     
         cursor.execute('SELECT * FROM users WHERE user_id = ?', (user_id,))
         result = cursor.fetchone()
 
         if result:
-            # Пользователь уже существует
+          
             conn.close()
             return False
         else:
-            # Регистрируем нового пользователя
+ 
             cursor.execute('''
                 INSERT INTO users (user_id, crystals, registration_date, role)
                 VALUES (?, ?, ?, ?)
@@ -1791,9 +1620,7 @@ def check_and_register_user(user_id):
             return True
 
 def save_welcome_promo(promo_code, crystals_amount, created_by):
-    """Сохраняет приветственный промокод в базу"""
-    expiration_date = (datetime.now() + timedelta(days=7)).isoformat()  # Промокод действует 7 дней
-
+    expiration_date = (datetime.now() + timedelta(days=7)).isoformat()  
     with db_lock:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -1803,14 +1630,10 @@ def save_welcome_promo(promo_code, crystals_amount, created_by):
         ''', (promo_code, crystals_amount, 1, expiration_date, created_by, datetime.now().isoformat()))
         conn.commit()
         conn.close()
-# Инициализация базы данных при запуске
 init_db()
-
-# Создаем необходимые папки
 for folder in ["tdatas", "downloads", "moderation"]:
     os.makedirs(folder, exist_ok=True)
 
-# Запуск бота
 if __name__ == "__main__":
     print("Бот запущен...")
     bot.polling(none_stop=True)
